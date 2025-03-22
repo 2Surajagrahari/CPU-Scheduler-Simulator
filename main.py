@@ -1,3 +1,4 @@
+# This code shows ui 
 import tkinter as tk
 from ttkbootstrap import Style
 from gui.app_ui import create_ui
