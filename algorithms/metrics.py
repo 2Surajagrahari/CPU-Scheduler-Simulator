@@ -86,3 +86,4 @@ def calculate_metrics(schedule, processes):
         })
     
     return summary, detailed_metrics
+

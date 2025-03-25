@@ -87,14 +87,30 @@ def create_ui(root):
 
     # Function to add a new process
     def add_process():
-        try:
-            pid = int(entry_pid.get())
-            arrival = int(entry_arrival.get())
-            burst = int(entry_burst.get())
-            priority = int(entry_priority.get())
-            table.insert("", "end", values=(pid, arrival, burst, priority))
-        except ValueError:
-            messagebox.showerror("Error", "Invalid input. Please enter valid numbers.")
+        pid = entry_pid.get()
+        arrival = entry_arrival.get()
+        burst = entry_burst.get()
+        priority = entry_priority.get() if algo_var.get() == "Priority" else None
+ 
+        if not pid.isdigit():
+            messagebox.showerror("Error", "Invalid input for PID. Please enter a valid integer.")
+            return
+        if not arrival.isdigit():
+            messagebox.showerror("Error", "Invalid input for Arrival Time. Please enter a valid integer.")
+            return
+        if not burst.isdigit():
+            messagebox.showerror("Error", "Invalid input for Burst Time. Please enter a valid integer.")
+            return
+        if algo_var.get() == "Priority" and (priority is None or not priority.isdigit()):
+            messagebox.showerror("Error", "Invalid input for Priority. Please enter a valid integer.")
+            return
+ 
+        pid = int(pid)
+        arrival = int(arrival)
+        burst = int(burst)
+        priority = int(priority) if priority is not None else None
+    
+        table.insert("", "end", values=(pid, arrival, burst, priority if priority is not None else ""))
 
     # Function to delete selected process
     def delete_process():
@@ -115,22 +131,70 @@ def create_ui(root):
         else:
             label_quantum.pack_forget()
             time_quantum.pack_forget()
+    
+     # Show entry_priority only for Priority algorithm
+        if algo_var.get() == "Priority":
+         entry_priority.grid(row=0, column=7)
+        else:
+         entry_priority.grid_forget()
 
     # Function to calculate scheduling
+    # def calculate_scheduling():
+    #     algorithm = algo_var.get()
+    #     try:
+    #         processes = []
+    #         for row in table.get_children():
+    #             values = table.item(row)['values']
+    #             processes.append({
+    #                 'pid': int(values[0]), 
+    #                 'arrival': int(values[1]), 
+    #                 'burst': int(values[2]), 
+    #                 'priority': int(values[3])
+    #             })
+
+    #         quantum = int(time_quantum.get()) if time_quantum.get() else 2
+            
+    #         # Run the scheduler
+    #         schedule, summary_metrics, detailed_metrics = run_scheduling_algorithm(
+    #             algorithm, processes, quantum if algorithm == "Round Robin" else None
+    #         )
+            
+    #         # Display results
+    #         create_gantt_chart(schedule, frame_chart)
+    #         display_metrics(frame_metrics, summary_metrics, detailed_metrics)
+            
+    #     except Exception as e:
+    #         messagebox.showerror("Error", f"Invalid input: {e}")
+
+#fdd
     def calculate_scheduling():
         algorithm = algo_var.get()
         try:
             processes = []
             for row in table.get_children():
                 values = table.item(row)['values']
+                pid = values[0]
+                arrival = values[1]
+                burst = values[2]
+                priority = values[3] if values[3] != "" else None
+
+                if not isinstance(pid, int):
+                    raise ValueError(f"Invalid PID: {pid}")
+                if not isinstance(arrival, int):
+                    raise ValueError(f"Invalid Arrival Time: {arrival}")
+                if not isinstance(burst, int):
+                    raise ValueError(f"Invalid Burst Time: {burst}")
+                if priority is not None and not isinstance(priority, int):
+                    raise ValueError(f"Invalid Priority: {priority}")
+
                 processes.append({
-                    'pid': int(values[0]), 
-                    'arrival': int(values[1]), 
-                    'burst': int(values[2]), 
-                    'priority': int(values[3])
+                    'pid': int(pid), 
+                    'arrival': int(arrival), 
+                    'burst': int(burst), 
+                    'priority': int(priority) if priority is not None else None
                 })
 
-            quantum = int(time_quantum.get()) if time_quantum.get() else 2
+                quantum = int(time_quantum.get()) if time_quantum.get() else 2
             
             # Run the scheduler
             schedule, summary_metrics, detailed_metrics = run_scheduling_algorithm(
@@ -140,10 +204,14 @@ def create_ui(root):
             # Display results
             create_gantt_chart(schedule, frame_chart)
             display_metrics(frame_metrics, summary_metrics, detailed_metrics)
-            
-        except Exception as e:
+        
+        except ValueError as e:
             messagebox.showerror("Error", f"Invalid input: {e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
 
+# Initialize UI based on current algorithm
+    update_time_quantum_visibility()
     # Add controls
     ttk.Button(frame_input, text="Add Process", command=add_process, bootstyle=INFO).grid(row=0, column=8, padx=5)
     ttk.Button(frame_input, text="Delete", command=delete_process, bootstyle=DANGER).grid(row=0, column=9, padx=5)

@@ -14,7 +14,8 @@ def display_metrics(frame, summary_metrics, detailed_metrics):
     for widget in frame.winfo_children():
         widget.destroy()
     
-    if not summary_metrics or not detailed_metrics:
+    if not summary_metrics or not detailed_metrics or 'avg_waiting_time' not in summary_metrics or 'avg_turnaround_time' not in summary_metrics or 'cpu_utilization' not in summary_metrics or 'throughput' not in summary_metrics:
+
         ttk.Label(frame, text="No metrics available.").pack(anchor="w", padx=10)
         return
     
@@ -58,3 +59,6 @@ def display_metrics(frame, summary_metrics, detailed_metrics):
     process_metrics_table.configure(yscrollcommand=scrollbar.set)
     scrollbar.pack(side="right", fill="y")
     process_metrics_table.pack(fill="both", expand=True)
+
+
+    
